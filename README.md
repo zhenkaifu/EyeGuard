@@ -7,11 +7,11 @@
 
 EyeGuard 针对三个最常见的伤眼场景，用一部手机的前置相机和传感器完成全天候守护：
 
-1. **贴脸刷手机**：CameraX 定时采样前置相机一帧 + ML Kit 人脸检测，估算眼屏距离，低于阈值连续命中 2 次即提醒（默认 30cm）；
+1. **贴脸刷手机**：CameraX 定时采样前置相机一帧 + ML Kit 人脸检测，估算眼屏距离，低于阈值立即提醒（默认 30cm）；
 2. **暗光用眼**：常开光线传感器，环境光低于阈值（默认 50 lux）且亮屏时提醒开灯（10 分钟不重复）；
 3. **长时间用眼**：基于 20-20-20 法则，连续用眼满 20 分钟提醒远眺 20 秒，每日亮屏时长与提醒次数落库，首页展示。
 
-变现采用 **RevenueCat 订阅**：免费版包含三大基础检测，Pro 版解锁智能屏幕柔和（护眼遮罩）、自定义阈值、7 天历史图表与免打扰时段。
+变现采用 **RevenueCat 订阅**：免费版包含三大基础检测，Pro 版解锁智能屏幕柔和（护眼遮罩）、自定义阈值、7 天历史图表、每周用眼报告与免打扰时段。
 
 ## 功能一览
 
@@ -20,12 +20,15 @@ EyeGuard 针对三个最常见的伤眼场景，用一部手机的前置相机�
 | 距离检测（定时拍一帧测距） | ✅ | ✅ |
 | 环境光暗提醒 | ✅ | ✅ |
 | 用眼时长提醒（20-20-20） | ✅ | ✅ |
+| 今日数据（用眼时长 / 过近时长 / 最长连续用眼 / 休息遵守率） | ✅ | ✅ |
+| 连续达标 streak | ✅ | ✅ |
 | 智能屏幕柔和（悬浮窗暖色遮罩，随环境光/夜间自动调节） | — | ✅ |
 | 自定义阈值（距离 / lux / 分钟） | — | ✅ |
 | 最近 7 天用眼历史图表 | — | ✅ |
+| 每周用眼报告（环比 / 最佳护眼日 / 成就徽章） | — | ✅ |
 | 免打扰时段（所有提醒静音） | — | ✅ |
 
-其他能力：前台服务常驻通知（含"暂停 1 小时"/"遮罩关 5 分钟"快捷操作）、Quick Settings 遮罩开关、付费墙（月付/年付，真实价格）、恢复购买。
+其他能力：前台服务常驻通知（含"暂停 15 分钟 / 1 小时 / 立即恢复""遮罩关 5 分钟"快捷操作）、Quick Settings 遮罩开关、服务被系统回收时的首页修复引导卡片（一键跳电池白名单 / 自启动管理）、开机后一键恢复守护通知、低电量自适应采样间隔、付费墙（月付/年付，真实价格）、恢复购买、中英文切换。
 
 ### 截图占位
 
@@ -42,24 +45,29 @@ EyeGuard 针对三个最常见的伤眼场景，用一部手机的前置相机�
 ```
 graph TD
     subgraph UI层（Jetpack Compose / Material 3）
-        A[HomeScreen<br/>今日数据 + 7天柱状图] 
-        B[SettingsScreen<br/>距离/光线/用眼/遮罩/DND]
+        A[HomeScreen<br/>今日数据 + 7天柱状图 + 修复引导] 
+        B[SettingsScreen<br/>距离/光线/用眼/遮罩/DND/语言]
         C[PaywallScreen<br/>RevenueCat offerings 真实价格]
         D[OnboardingPermissionsScreen<br/>相机/通知/悬浮窗引导]
         E[DndScreen]
         F[EyeFilterTileService<br/>快捷设置开关]
         G[WeeklyBarChart<br/>Canvas 自绘]
+        H[WeeklyReportScreen<br/>周报 + streak + 成就]
     end
 
     subgraph Service层（EyeGuardService 单前台服务）
-        S1[距离采样调度器<br/>CameraX 一帧即释放]
+        S1[距离采样调度器<br/>CameraX 一帧即释放 + 低电量自适应]
         S2[LightMonitor<br/>TYPE_LIGHT 常开]
-        S3[UsageMonitor<br/>SCREEN_ON/OFF + 20-20-20]
+        S3[UsageMonitor<br/>SCREEN_ON/OFF + 20-20-20 + 遵守率]
         S4[EyeFilterController<br/>WindowManager 悬浮遮罩]
         S5[Notifier<br/>常驻通知 + Heads-up 提醒]
         S1 --> S5
         S2 --> S5
         S3 --> S5
+    end
+
+    subgraph 系统入口
+        B1[BootReceiver<br/>开机后一键恢复守护]
     end
 
     subgraph 数据层
@@ -143,7 +151,7 @@ distance = (真实脸宽 × 焦距px) / 人脸框宽px
 ## Roadmap
 
 - **家长端**：远程查看孩子用眼数据、距离提醒周报（多设备绑定）
-- **用眼周报**：每周趋势 + 环比分析，RevenueCat 付费墙内做订阅留存钩子
+- **全屏休息遮罩**：提醒时短暂全屏覆盖（可跳过），强制远眺 20 秒
 - **Edge Lighting 提醒**：息屏曲面光效提醒，避免通知横幅打断当前操作
 
 ## License
