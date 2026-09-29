@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EyeGuard</string>
+
+    <!-- 首页 -->
+    <string name="home_title">EyeGuard 护眼</string>
+    <string name="settings">设置</string>
+    <string name="guard_title">护眼守护</string>
+    <string name="guard_running">守护中</string>
+    <string name="guard_stopped">已停止</string>
+    <string name="today_data">今日数据</string>
+    <string name="today_screen_time">今日用眼时长：%1$s</string>
+    <string name="today_distance_count">距离提醒：%1$d 次</string>
+    <string name="today_dark_count">暗光提醒：%1$d 次</string>
+    <string name="today_usage_count">用眼休息提醒：%1$d 次</string>
+    <string name="duration_hours_minutes">%1$d 小时 %2$d 分</string>
+    <string name="duration_minutes">%1$d 分钟</string>
+    <string name="weekly_chart_title">最近 7 天用眼时长</string>
+    <string name="weekly_chart_pro_lock">最近 7 天用眼时长（Pro 🔒）</string>
+    <string name="weekly_chart_upgrade_hint">升级 Pro 查看最近 7 天用眼历史图表</string>
+    <string name="weekly_chart_empty">暂无数据，开启守护后自动记录</string>
+    <string name="quick_entries">快捷入口</string>
+    <string name="permission_guide">权限引导</string>
+    <string name="upgrade_pro">升级到 Pro</string>
+    <string name="debug_panel">调试面板</string>
+    <string name="back">返回</string>
+
+    <!-- 设置页 -->
+    <string name="distance_section">距离检测</string>
+    <string name="distance_alert_switch">距离过近提醒</string>
+    <string name="sampling_interval_label">采样间隔：%1$d 秒</string>
+    <string name="distance_threshold_label">距离阈值：%1$d cm（低于此值提醒）</string>
+    <string name="distance_hint">采样时短暂开启前置相机拍一帧即释放，不会持续占用相机；参数修改后下一轮采样自动生效。</string>
+    <string name="light_section">环境光检测</string>
+    <string name="light_alert_switch">光线过暗提醒</string>
+    <string name="light_threshold_label">光线阈值：低于 %1$d lux 提醒</string>
+    <string name="usage_section">用眼时长提醒</string>
+    <string name="usage_alert_switch">连续用眼提醒（20-20-20）</string>
+    <string name="usage_threshold_label">连续用眼 %1$d 分钟后提醒</string>
+    <string name="usage_hint">提醒后休息 20 秒将重置连续用眼计时；每日数据自动记录，可在首页查看。%1$s</string>
+    <string name="usage_hint_pro_note">（自定义阈值与图表为 Pro 功能）</string>
+    <string name="pro_gate_card">🔒 自定义阈值、智能遮罩、历史图表、免打扰 — 升级 Pro 解锁</string>
+    <string name="filter_section">护眼遮罩</string>
+    <string name="filter_switch_pro">护眼遮罩（Pro）</string>
+    <string name="filter_overlay_needed">需要悬浮窗权限，点击去开启</string>
+    <string name="intensity_label">强度</string>
+    <string name="intensity_light">浅</string>
+    <string name="intensity_medium">中</string>
+    <string name="intensity_deep">深</string>
+    <string name="smart_mode_switch">智能模式（按环境光 / 夜间自动调节）</string>
+    <string name="night_period_label">夜间时段：%1$s – %2$s</string>
+    <string name="night_start_label">开始</string>
+    <string name="night_end_label">结束</string>
+    <string name="night_start_value">开始：%1$s（超过 24 点为次日凌晨）</string>
+    <string name="night_end_value">结束：%1$s</string>
+    <string name="filter_hint">说明：遮罩会让截图 / 录屏带暖色调；银行、支付类 App 的防截屏安全页面会临时屏蔽遮罩（系统限制）。可在下拉快捷开关或常驻通知中快速关闭。</string>
+    <string name="reminder_section">提醒</string>
+    <string name="dnd_entry_pro">免打扰时段（Pro 🔒）</string>
+    <string name="dnd_entry">免打扰时段</string>
+    <string name="dnd_go_settings">设置</string>
+    <string name="dnd_upgrade">升级解锁</string>
+
+    <!-- 免打扰页 -->
+    <string name="dnd_title">免打扰时段</string>
+    <string name="dnd_switch">开启免打扰</string>
+    <string name="dnd_period_label">免打扰时段：%1$s – %2$s</string>
+    <string name="dnd_hint">时段内所有提醒静音（不弹通知、不震动），亮屏统计与距离检测仍正常进行。</string>
+    <string name="hour_format">%1$02d:00</string>
+
+    <!-- 权限引导页 -->
+    <string name="permission_title">开启权限</string>
+    <string name="permission_intro">为了让 EyeGuard 正常工作，请按顺序完成以下授权：</string>
+    <string name="perm_notification_title">通知权限</string>
+    <string name="perm_notification_desc">用于发送护眼提醒与常驻守护状态（Android 13+ 需要）</string>
+    <string name="perm_camera_title">相机权限</string>
+    <string name="perm_camera_desc">每 30 秒短暂开启前置相机测量人脸距离，拍完立即释放，不会长开</string>
+    <string name="perm_banner_title">横幅通知（重要）</string>
+    <string name="perm_banner_desc">决定提醒是否弹屏；若曾开启过「静默通知」或点过系统弹窗，渠道重要性会被降级且不自动恢复——跳转到渠道设置把重要性调为最高档</string>
+    <string name="perm_dnd_title">勿扰例外（建议）</string>
+    <string name="perm_dnd_desc">手机静音 / 勿扰时声音与震动会被系统压制（任何 App 都无法绕过）；把 EyeGuard 设为勿扰例外后，勿扰模式下提醒照常响铃震动</string>
+    <string name="perm_battery_title">电池优化白名单</string>
+    <string name="perm_battery_desc">防止系统在后台冻结 EyeGuard。不加入的话，退到后台或锁屏一段时间后提醒会失效</string>
+    <string name="perm_overlay_title">悬浮窗权限（可选）</string>
+    <string name="perm_overlay_desc">用于显示护眼遮罩；不授权不影响距离、光线、用眼提醒</string>
+    <string name="perm_rom_note">国产 ROM 额外步骤（MIUI / EMUI / ColorOS 等）：\n设置 → 应用管理 → EyeGuard → 允许自启动；省电策略设为「无限制」，否则后台服务会被系统回收，距离检测将停止。</string>
+    <string name="open_app_settings">打开应用详情设置</string>
+    <string name="granted">已授权</string>
+    <string name="granted_on">已开启</string>
+    <string name="go_grant">去授权</string>
+    <string name="go_fix">去修复</string>
+    <string name="go_settings">去设置</string>
+    <string name="start_guard">完成授权，开始守护</string>
+    <string name="grant_camera_first">请先授予相机权限</string>
+
+    <!-- 付费墙 -->
+    <string name="paywall_title">升级 Pro</string>
+    <string name="paywall_headline">EyeGuard Pro</string>
+    <string name="paywall_subtitle">解锁全部高级功能：</string>
+    <string name="pro_feature_1">智能屏幕柔和（环境光 / 夜间自动调节）</string>
+    <string name="pro_feature_2">自定义提醒阈值（距离 / 光线 / 时长）</string>
+    <string name="pro_feature_3">最近 7 天用眼历史图表</string>
+    <string name="pro_feature_4">免打扰时段设置</string>
+    <string name="paywall_loading">正在加载订阅信息…（若长时间无内容，请检查 RevenueCat 配置）</string>
+    <string name="plan_monthly">按月订阅</string>
+    <string name="plan_yearly">按年订阅（推荐）</string>
+    <string name="price_unknown">--</string>
+    <string name="subscribe_now">立即订阅</string>
+    <string name="purchasing_monthly">正在购买月付…</string>
+    <string name="purchasing_yearly">正在购买年付…</string>
+    <string name="restore_purchase">恢复购买</string>
+    <string name="restore_success">已恢复 Pro</string>
+    <string name="restore_none">未找到历史订阅</string>
+    <string name="paywall_footer">订阅将自动续费，可随时在 Google Play 中取消。</string>
+
+    <!-- 调试面板 -->
+    <string name="debug_title">调试面板</string>
+    <string name="debug_reminder_test">提醒触发测试</string>
+    <string name="debug_trigger_distance">距离提醒</string>
+    <string name="debug_trigger_dark">暗光提醒</string>
+    <string name="debug_trigger_usage">用眼休息提醒</string>
+    <string name="debug_sensor_section">采样与传感器</string>
+    <string name="debug_sample_now">立即采样一次（测距离）</string>
+    <string name="debug_sampling">采样中…</string>
+    <string name="debug_result_label">测距结果：%1$s</string>
+    <string name="debug_result_idle">（未采样）</string>
+    <string name="debug_lux_label">环境光：%1$s</string>
+    <string name="debug_lux_none">尚无读数（需先开启守护注册传感器）</string>
+    <string name="debug_lux_format">%1$.1f lux</string>
+    <string name="debug_service_running">守护服务：运行中</string>
+    <string name="debug_service_stopped">守护服务：已停止</string>
+    <string name="debug_hint">提示：若提醒只进通知栏不弹屏，请到权限引导页开启「横幅通知」；静音模式下声音与震动受系统压制，属正常。</string>
+
+    <!-- 服务状态与提醒通知 -->
+    <string name="status_paused_1h">已暂停 1 小时</string>
+    <string name="status_paused_15m">已暂停 15 分钟</string>
+    <string name="status_paused_generic">已暂停 · 点通知按钮恢复</string>
+    <string name="status_resumed">守护中 · 已恢复</string>
+    <string name="status_init">守护中 · 初始化</string>
+    <string name="status_distance_off">距离检测已关闭</string>
+    <string name="status_no_camera_perm">缺少相机权限</string>
+    <string name="status_detecting">守护中 · 检测中…</string>
+    <string name="status_sample_unavailable">守护中 · 本次检测不可用</string>
+    <string name="status_camera_busy">守护中 · 检测不可用（相机可能被其他应用占用）</string>
+    <string name="status_distance_normal">守护中 · 距离正常</string>
+    <string name="status_distance_close">守护中 · 距离偏近</string>
+    <string name="status_distance_value">守护中 · 距离约 %1$.0fcm</string>
+    <string name="status_reminded_rest">守护中 · 已提醒保持远眺</string>
+    <string name="status_reminded_light">守护中 · 已提醒开灯</string>
+    <string name="status_rest_20s">守护中 · 请远眺 20 秒</string>
+    <string name="filter_snoozed">护眼遮罩已临时关闭 5 分钟</string>
+    <string name="notif_too_close_title">距离过近</string>
+    <string name="notif_too_close_content">眼睛距屏幕约 %1$.0fcm，请保持 %2$dcm 以上</string>
+    <string name="notif_dark_title">环境光线太暗</string>
+    <string name="notif_dark_content">当前光线不足，请开灯或调高亮度，避免在暗光下用眼</string>
+    <string name="notif_usage_title">连续用眼 %1$d 分钟</string>
+    <string name="notif_usage_content">请抬头看 6 米外 20 秒，放松眼部肌肉</string>
+    <string name="pause_1h_action">暂停 1 小时</string>
+    <string name="pause_15m_action">暂停 15 分钟</string>
+    <string name="resume_action">立即恢复</string>
+    <string name="snooze_filter_action">遮罩关 5 分钟</string>
+
+    <!-- 首页：服务被杀修复引导 / 今日新增维度 / streak -->
+    <string name="repair_card_title">守护服务已被系统停止</string>
+    <string name="repair_card_desc">开关处于开启状态，但服务被系统回收了。请依次完成「电池白名单」与「自启动管理」设置，然后重新打开守护开关。</string>
+    <string name="repair_battery">电池白名单</string>
+    <string name="repair_autostart">自启动管理</string>
+    <string name="today_too_close_duration">距离过近时长：%1$s</string>
+    <string name="today_longest_session">最长连续用眼：%1$s</string>
+    <string name="today_compliance">休息遵守率：%1$d%%</string>
+    <string name="streak_days">🔥 连续达标 %1$d 天</string>
+    <string name="weekly_report_entry">每周用眼报告</string>
+    <string name="weekly_report_entry_pro">每周用眼报告（Pro 🔒）</string>
+
+    <!-- 每周用眼报告 -->
+    <string name="report_title">每周用眼报告</string>
+    <string name="report_overview">本周概览</string>
+    <string name="report_total">总用眼时长：%1$s</string>
+    <string name="report_avg">日均：%1$s</string>
+    <string name="report_vs_last_week">较上周：%1$s</string>
+    <string name="report_longest_session">最长连续用眼：%1$s</string>
+    <string name="report_too_close">距离过近累计：%1$s</string>
+    <string name="report_compliance">休息遵守率：%1$d%%</string>
+    <string name="report_best_day">最佳护眼日：%1$s</string>
+    <string name="report_streak">🔥 连续达标 %1$d 天</string>
+    <string name="report_qualified_hint">达标日 = 当天有用眼记录且休息遵守率 ≥ 80%；当天没触发用眼提醒视为达标。</string>
+    <string name="report_achievements">成就</string>
+    <string name="report_empty">暂无足够数据，开启守护几天后自动生成周报</string>
+    <string name="report_no_data">暂无</string>
+    <string name="trend_up">+%1$d%%</string>
+    <string name="trend_down">-%1$d%%</string>
+    <string name="trend_flat">持平</string>
+    <string name="ach_first_rest">初次远眺</string>
+    <string name="ach_first_rest_desc">完成第 1 次提醒后休息</string>
+    <string name="ach_rest_10">自律达人</string>
+    <string name="ach_rest_10_desc">累计完成 10 次提醒后休息</string>
+    <string name="ach_rest_50">护眼标兵</string>
+    <string name="ach_rest_50_desc">累计完成 50 次提醒后休息</string>
+    <string name="ach_streak_3">小有坚持</string>
+    <string name="ach_streak_3_desc">连续 3 天达标</string>
+    <string name="ach_streak_7">一周全勤</string>
+    <string name="ach_streak_7_desc">连续 7 天达标</string>
+    <string name="ach_locked">未解锁</string>
+
+    <!-- 开机兜底通知 -->
+    <string name="notif_boot_title">守护未恢复</string>
+    <string name="notif_boot_content">手机重启后 EyeGuard 未自动运行，点击立即恢复守护</string>
+
+    <!-- 调试触发的通知文案 -->
+    <string name="debug_notif_too_close_content">（调试触发）眼睛距屏幕过近，请保持 30cm 以上</string>
+    <string name="debug_notif_dark_content">（调试触发）请开灯或调高亮度</string>
+    <string name="debug_notif_usage_title">连续用眼提醒</string>
+    <string name="debug_notif_usage_content">（调试触发）请抬头看 6 米外 20 秒</string>
+    <string name="debug_sampling_result_ok">估算距离约 %.0f cm</string>
+    <string name="debug_sampling_result_none">未检测到人脸（或超出 20–50cm 可信范围）</string>
+    <string name="debug_sampling_result_unavailable">相机不可用（权限/被占用/超时）</string>
+
+    <!-- 采样结果（调试 ViewModel 用 getString，动态拼接见代码） -->
+    <string name="sample_result_sampling">采样中…</string>
+
+    <!-- 语言切换 -->
+    <string name="language_section">语言 / Language</string>
+    <string name="language_zh">中文</string>
+    <string name="language_en">English</string>
+
+    <!-- 渠道与 Tile -->
+    <string name="channel_reminder_name">护眼提醒</string>
+    <string name="channel_reminder_desc">距离、光线、时长等护眼提醒</string>
+    <string name="channel_status_name">守护状态</string>
+    <string name="channel_status_desc">前台服务常驻状态展示</string>
+    <string name="billing_not_configured">计费未配置</string>
+    <string name="tile_label">护眼遮罩</string>
+</resources>

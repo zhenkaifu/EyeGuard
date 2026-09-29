@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EyeGuard</string>
+
+    <!-- Home -->
+    <string name="home_title">EyeGuard</string>
+    <string name="settings">Settings</string>
+    <string name="guard_title">Eye Guard</string>
+    <string name="guard_running">Guarding</string>
+    <string name="guard_stopped">Stopped</string>
+    <string name="today_data">Today</string>
+    <string name="today_screen_time">Screen time today: %1$s</string>
+    <string name="today_distance_count">Distance alerts: %1$d</string>
+    <string name="today_dark_count">Dim-light alerts: %1$d</string>
+    <string name="today_usage_count">Rest reminders: %1$d</string>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="duration_minutes">%1$d min</string>
+    <string name="weekly_chart_title">Last 7 days</string>
+    <string name="weekly_chart_pro_lock">Last 7 days (Pro 🔒)</string>
+    <string name="weekly_chart_upgrade_hint">Upgrade to Pro to view your 7-day eye-usage history</string>
+    <string name="weekly_chart_empty">No data yet. It will be recorded once guarding starts.</string>
+    <string name="quick_entries">Shortcuts</string>
+    <string name="permission_guide">Permissions</string>
+    <string name="upgrade_pro">Upgrade to Pro</string>
+    <string name="debug_panel">Debug Panel</string>
+    <string name="back">Back</string>
+
+    <!-- Settings -->
+    <string name="distance_section">Distance Detection</string>
+    <string name="distance_alert_switch">Too-close alert</string>
+    <string name="sampling_interval_label">Sampling interval: %1$d s</string>
+    <string name="distance_threshold_label">Distance threshold: %1$d cm (alert below this)</string>
+    <string name="distance_hint">The front camera is opened briefly for a single frame per sample and released immediately; parameter changes take effect on the next sample.</string>
+    <string name="light_section">Ambient Light</string>
+    <string name="light_alert_switch">Dim-light alert</string>
+    <string name="light_threshold_label">Light threshold: alert below %1$d lux</string>
+    <string name="usage_section">Eye Usage Reminder</string>
+    <string name="usage_alert_switch">Continuous-use reminder (20-20-20)</string>
+    <string name="usage_threshold_label">Remind after %1$d minutes of continuous use</string>
+    <string name="usage_hint">Resting for 20 seconds after a reminder resets the continuous-use timer. Daily data is recorded automatically and shown on the home screen.%1$s</string>
+    <string name="usage_hint_pro_note"> (Custom thresholds and charts are Pro features.)</string>
+    <string name="pro_gate_card">🔒 Custom thresholds, smart filter, history charts and DND — upgrade to Pro</string>
+    <string name="filter_section">Eye Comfort Filter</string>
+    <string name="filter_switch_pro">Eye comfort filter (Pro)</string>
+    <string name="filter_overlay_needed">Overlay permission required — tap to enable</string>
+    <string name="intensity_label">Intensity</string>
+    <string name="intensity_light">Light</string>
+    <string name="intensity_medium">Medium</string>
+    <string name="intensity_deep">Strong</string>
+    <string name="smart_mode_switch">Smart mode (auto-adjusts by ambient light / night)</string>
+    <string name="night_period_label">Night hours: %1$s – %2$s</string>
+    <string name="night_start_label">Start</string>
+    <string name="night_end_label">End</string>
+    <string name="night_start_value">Start: %1$s (past 24:00 means after midnight)</string>
+    <string name="night_end_value">End: %1$s</string>
+    <string name="filter_hint">Note: screenshots and screen recordings will carry a warm tint; banking/payment apps\' secure screens may temporarily hide the filter (system limitation). The filter can be toggled via the Quick Settings tile or the persistent notification.</string>
+    <string name="reminder_section">Reminders</string>
+    <string name="dnd_entry_pro">Do-Not-Disturb hours (Pro 🔒)</string>
+    <string name="dnd_entry">Do-Not-Disturb hours</string>
+    <string name="dnd_go_settings">Set up</string>
+    <string name="dnd_upgrade">Upgrade</string>
+
+    <!-- DND -->
+    <string name="dnd_title">Do-Not-Disturb Hours</string>
+    <string name="dnd_switch">Enable DND hours</string>
+    <string name="dnd_period_label">DND hours: %1$s – %2$s</string>
+    <string name="dnd_hint">All alerts are silenced (no pop-ups, no vibration) during DND hours. Screen-time tracking and distance detection keep running.</string>
+    <string name="hour_format">%1$02d:00</string>
+
+    <!-- Permissions -->
+    <string name="permission_title">Permissions</string>
+    <string name="permission_intro">Grant the following permissions so EyeGuard can work properly:</string>
+    <string name="perm_notification_title">Notifications</string>
+    <string name="perm_notification_desc">Used for eye-care reminders and the persistent guard status (Android 13+)</string>
+    <string name="perm_camera_title">Camera</string>
+    <string name="perm_camera_desc">Opens the front camera briefly (one frame every 30s) to measure face distance, then releases it immediately</string>
+    <string name="perm_banner_title">Banner notifications (important)</string>
+    <string name="perm_banner_desc">Controls whether reminders pop up on screen. If "silent notifications" was ever enabled, the channel importance is demoted and will not recover by itself — open channel settings and set importance to the highest level</string>
+    <string name="perm_dnd_title">DND exception (recommended)</string>
+    <string name="perm_dnd_desc">Sound and vibration are suppressed by the system in silent/DND mode (no app can bypass this). Adding EyeGuard as a DND exception lets alerts ring and vibrate during DND</string>
+    <string name="perm_battery_title">Battery optimization whitelist</string>
+    <string name="perm_battery_desc">Prevents the system from freezing EyeGuard in the background. Without it, reminders stop working after the app stays in background or the screen is off for a while</string>
+    <string name="perm_overlay_title">Display over other apps (optional)</string>
+    <string name="perm_overlay_desc">Used for the eye comfort filter. Distance, light and usage reminders work without it</string>
+    <string name="perm_rom_note">Extra steps on Chinese ROMs (MIUI / EMUI / ColorOS): Settings → Apps → EyeGuard → allow auto-launch; set battery strategy to "Unrestricted", otherwise the background service will be killed and distance detection stops.</string>
+    <string name="open_app_settings">Open app settings</string>
+    <string name="granted">Granted</string>
+    <string name="granted_on">Enabled</string>
+    <string name="go_grant">Grant</string>
+    <string name="go_fix">Fix</string>
+    <string name="go_settings">Open settings</string>
+    <string name="start_guard">Done — start guarding</string>
+    <string name="grant_camera_first">Grant camera permission first</string>
+
+    <!-- Paywall -->
+    <string name="paywall_title">Upgrade to Pro</string>
+    <string name="paywall_headline">EyeGuard Pro</string>
+    <string name="paywall_subtitle">Unlock all premium features:</string>
+    <string name="pro_feature_1">Smart eye comfort filter (auto-adjusts by ambient light / night)</string>
+    <string name="pro_feature_2">Custom thresholds (distance / light / duration)</string>
+    <string name="pro_feature_3">7-day eye-usage history chart</string>
+    <string name="pro_feature_4">Do-Not-Disturb hours</string>
+    <string name="paywall_loading">Loading subscriptions… (if this takes long, check your RevenueCat configuration)</string>
+    <string name="plan_monthly">Monthly</string>
+    <string name="plan_yearly">Yearly (recommended)</string>
+    <string name="price_unknown">--</string>
+    <string name="subscribe_now">Subscribe now</string>
+    <string name="purchasing_monthly">Purchasing monthly…</string>
+    <string name="purchasing_yearly">Purchasing yearly…</string>
+    <string name="restore_purchase">Restore purchases</string>
+    <string name="restore_success">Pro restored</string>
+    <string name="restore_none">No previous subscription found</string>
+    <string name="paywall_footer">Subscriptions renew automatically and can be cancelled anytime in Google Play.</string>
+
+    <!-- Debug panel -->
+    <string name="debug_title">Debug Panel</string>
+    <string name="debug_reminder_test">Reminder trigger tests</string>
+    <string name="debug_trigger_distance">Distance alert</string>
+    <string name="debug_trigger_dark">Dim-light alert</string>
+    <string name="debug_trigger_usage">Rest reminder</string>
+    <string name="debug_sensor_section">Sampling &amp; sensors</string>
+    <string name="debug_sample_now">Sample once (measure distance)</string>
+    <string name="debug_sampling">Sampling…</string>
+    <string name="debug_result_label">Distance result: %1$s</string>
+    <string name="debug_result_idle">(not sampled)</string>
+    <string name="debug_lux_label">Ambient light: %1$s</string>
+    <string name="debug_lux_none">No reading yet (start guarding to register the sensor)</string>
+    <string name="debug_lux_format">%1$.1f lux</string>
+    <string name="debug_service_running">Guard service: running</string>
+    <string name="debug_service_stopped">Guard service: stopped</string>
+    <string name="debug_hint">Tip: if reminders only appear in the notification shade, enable "banner notifications" on the Permissions page. In silent mode, sound and vibration are suppressed by the system — expected.</string>
+
+    <!-- Service status & reminder notifications -->
+    <string name="status_paused_1h">Paused for 1 hour</string>
+    <string name="status_paused_15m">Paused for 15 minutes</string>
+    <string name="status_paused_generic">Paused · tap the notification button to resume</string>
+    <string name="status_resumed">Guarding · resumed</string>
+    <string name="status_init">Guarding · initializing</string>
+    <string name="status_distance_off">Distance detection off</string>
+    <string name="status_no_camera_perm">Camera permission missing</string>
+    <string name="status_detecting">Guarding · measuring…</string>
+    <string name="status_sample_unavailable">Guarding · sample unavailable</string>
+    <string name="status_camera_busy">Guarding · unavailable (camera may be in use by another app)</string>
+    <string name="status_distance_normal">Guarding · distance OK</string>
+    <string name="status_distance_close">Guarding · too close</string>
+    <string name="status_distance_value">Guarding · ~%1$.0fcm</string>
+    <string name="status_reminded_rest">Guarding · rest reminder sent</string>
+    <string name="status_reminded_light">Guarding · light reminder sent</string>
+    <string name="status_rest_20s">Guarding · look 6m away for 20s</string>
+    <string name="filter_snoozed">Filter off for 5 minutes</string>
+    <string name="notif_too_close_title">Too close to screen</string>
+    <string name="notif_too_close_content">Your eyes are ~%1$.0fcm from the screen. Keep at least %2$dcm away</string>
+    <string name="notif_dark_title">Ambient light too dim</string>
+    <string name="notif_dark_content">Light is too low. Turn on a light or raise brightness to protect your eyes</string>
+    <string name="notif_usage_title">%1$d minutes of continuous use</string>
+    <string name="notif_usage_content">Look at something 6 meters away for 20 seconds to relax your eyes</string>
+    <string name="pause_1h_action">Pause 1 hour</string>
+    <string name="pause_15m_action">Pause 15 min</string>
+    <string name="resume_action">Resume now</string>
+    <string name="snooze_filter_action">Filter off 5 min</string>
+
+    <!-- Home: killed-service repair card / new today metrics / streak -->
+    <string name="repair_card_title">Guard service was stopped by the system</string>
+    <string name="repair_card_desc">The switch is on, but the system reclaimed the service. Please complete the battery whitelist and auto-launch settings below, then turn the guard switch on again.</string>
+    <string name="repair_battery">Battery whitelist</string>
+    <string name="repair_autostart">Auto-launch</string>
+    <string name="today_too_close_duration">Too-close duration: %1$s</string>
+    <string name="today_longest_session">Longest continuous use: %1$s</string>
+    <string name="today_compliance">Rest compliance: %1$d%%</string>
+    <string name="streak_days">🔥 %1$d-day streak</string>
+    <string name="weekly_report_entry">Weekly eye report</string>
+    <string name="weekly_report_entry_pro">Weekly eye report (Pro 🔒)</string>
+
+    <!-- Weekly report -->
+    <string name="report_title">Weekly Eye Report</string>
+    <string name="report_overview">This week</string>
+    <string name="report_total">Total screen time: %1$s</string>
+    <string name="report_avg">Daily average: %1$s</string>
+    <string name="report_vs_last_week">vs last week: %1$s</string>
+    <string name="report_longest_session">Longest continuous use: %1$s</string>
+    <string name="report_too_close">Too-close total: %1$s</string>
+    <string name="report_compliance">Rest compliance: %1$d%%</string>
+    <string name="report_best_day">Best eye-care day: %1$s</string>
+    <string name="report_streak">🔥 %1$d-day streak</string>
+    <string name="report_qualified_hint">A qualified day means you used the screen with rest compliance ≥ 80%; days without rest reminders count as qualified.</string>
+    <string name="report_achievements">Achievements</string>
+    <string name="report_empty">Not enough data yet — keep guarding for a few days and the weekly report will appear</string>
+    <string name="report_no_data">N/A</string>
+    <string name="trend_up">+%1$d%%</string>
+    <string name="trend_down">-%1$d%%</string>
+    <string name="trend_flat">Same</string>
+    <string name="ach_first_rest">First rest</string>
+    <string name="ach_first_rest_desc">Complete your first rest after a reminder</string>
+    <string name="ach_rest_10">Disciplined</string>
+    <string name="ach_rest_10_desc">Complete 10 rests after reminders</string>
+    <string name="ach_rest_50">Eye-care champion</string>
+    <string name="ach_rest_50_desc">Complete 50 rests after reminders</string>
+    <string name="ach_streak_3">Getting consistent</string>
+    <string name="ach_streak_3_desc">3-day qualified streak</string>
+    <string name="ach_streak_7">Perfect week</string>
+    <string name="ach_streak_7_desc">7-day qualified streak</string>
+    <string name="ach_locked">Locked</string>
+
+    <!-- Boot fallback notification -->
+    <string name="notif_boot_title">Guard not resumed</string>
+    <string name="notif_boot_content">EyeGuard did not restart after reboot — tap to resume guarding</string>
+
+    <!-- Debug-triggered notifications -->
+    <string name="debug_notif_too_close_content">(Debug) You are too close to the screen. Keep at least 30cm away</string>
+    <string name="debug_notif_dark_content">(Debug) Turn on a light or raise brightness</string>
+    <string name="debug_notif_usage_title">Continuous use reminder</string>
+    <string name="debug_notif_usage_content">(Debug) Look 6 meters away for 20 seconds</string>
+    <string name="sample_result_sampling">Sampling…</string>
+
+    <!-- Language -->
+    <string name="language_section">Language / 语言</string>
+    <string name="language_zh">中文</string>
+    <string name="language_en">English</string>
+
+    <!-- Channels & tile -->
+    <string name="channel_reminder_name">Eye reminders</string>
+    <string name="channel_reminder_desc">Distance, light and usage reminders</string>
+    <string name="channel_status_name">Guard status</string>
+    <string name="channel_status_desc">Persistent foreground service status</string>
+    <string name="billing_not_configured">Billing not configured</string>
+    <string name="tile_label">Eye filter</string>
+</resources>
