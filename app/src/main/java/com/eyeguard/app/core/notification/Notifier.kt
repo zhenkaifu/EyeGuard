@@ -50,10 +50,22 @@ class Notifier @Inject constructor(
         /** "临时关闭护眼遮罩 5 分钟"通知操作的 broadcast action。 */
         const val ACTION_SNOOZE_FILTER = "com.eyeguard.app.action.SNOOZE_FILTER"
         const val FILTER_SNOOZE_MS = 5 * 60 * 1000L
+
+        /** 专注修炼前台状态与通知点击动作。 */
+        const val CHANNEL_ID_FOCUS_STATUS = "focus_status"
+        const val FOCUS_STATUS_NOTIFICATION_ID = 1100
+        const val ACTION_OPEN_FOCUS = "com.eyeguard.app.action.OPEN_FOCUS"
     }
 
     private val notificationManager: NotificationManagerCompat =
         NotificationManagerCompat.from(context)
+
+    /**
+     * 按 App 内选择的语言取文案（服务进程不走 Activity 的 attachBaseContext，
+     * 直接用系统语言会与应用内切换不一致）。
+     */
+    private fun str(resId: Int): String =
+        com.eyeguard.app.ui.LocaleHelper.wrap(context).getString(resId)
 
     /** 提醒通知自增 ID（每条提醒全新 ID，避免"更新旧通知不弹横幅"问题）。 */
     private val reminderIdCounter = java.util.concurrent.atomic.AtomicInteger(0)
@@ -61,6 +73,7 @@ class Notifier @Inject constructor(
     init {
         createReminderChannel()
         createStatusChannel()
+        createFocusStatusChannel()
     }
 
     /**
@@ -69,10 +82,10 @@ class Notifier @Inject constructor(
     private fun createReminderChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID_REMINDER,
-            context.getString(com.eyeguard.app.R.string.channel_reminder_name),
+            str(com.eyeguard.app.R.string.channel_reminder_name),
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = context.getString(com.eyeguard.app.R.string.channel_reminder_desc)
+            description = str(com.eyeguard.app.R.string.channel_reminder_desc)
             enableVibration(true)
         }
         notificationManager.createNotificationChannel(channel)
@@ -84,10 +97,22 @@ class Notifier @Inject constructor(
     private fun createStatusChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID_STATUS,
-            context.getString(com.eyeguard.app.R.string.channel_status_name),
+            str(com.eyeguard.app.R.string.channel_status_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = context.getString(com.eyeguard.app.R.string.channel_status_desc)
+            description = str(com.eyeguard.app.R.string.channel_status_desc)
+            setShowBadge(false)
+        }
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun createFocusStatusChannel() {
+        val channel = NotificationChannel(
+            CHANNEL_ID_FOCUS_STATUS,
+            str(com.eyeguard.app.R.string.channel_focus_status_name),
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = str(com.eyeguard.app.R.string.channel_focus_status_desc)
             setShowBadge(false)
         }
         notificationManager.createNotificationChannel(channel)
@@ -124,24 +149,24 @@ class Notifier @Inject constructor(
         if (paused) {
             builder.addAction(
                 0,
-                context.getString(com.eyeguard.app.R.string.resume_action),
+                str(com.eyeguard.app.R.string.resume_action),
                 actionIntent(ACTION_RESUME_MONITORING, 3)
             )
         } else {
             builder.addAction(
                 0,
-                context.getString(com.eyeguard.app.R.string.pause_15m_action),
+                str(com.eyeguard.app.R.string.pause_15m_action),
                 actionIntent(ACTION_PAUSE_MONITORING_15M, 2)
             )
             builder.addAction(
                 0,
-                context.getString(com.eyeguard.app.R.string.pause_1h_action),
+                str(com.eyeguard.app.R.string.pause_1h_action),
                 actionIntent(ACTION_PAUSE_MONITORING, 0)
             )
         }
         builder.addAction(
             0,
-            context.getString(com.eyeguard.app.R.string.snooze_filter_action),
+            str(com.eyeguard.app.R.string.snooze_filter_action),
             actionIntent(ACTION_SNOOZE_FILTER, 1)
         )
         return builder
@@ -231,14 +256,137 @@ class Notifier @Inject constructor(
         )
         val builder = NotificationCompat.Builder(context, CHANNEL_ID_REMINDER)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle(context.getString(com.eyeguard.app.R.string.notif_boot_title))
-            .setContentText(context.getString(com.eyeguard.app.R.string.notif_boot_content))
+            .setContentTitle(str(com.eyeguard.app.R.string.notif_boot_title))
+            .setContentText(str(com.eyeguard.app.R.string.notif_boot_content))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setContentIntent(contentIntent)
             .setAutoCancel(true)
         notificationManager.notify(REMINDER_ID_BASE + reminderIdCounter.incrementAndGet(), builder.build())
     }
+
+    private fun focusContentIntent(): android.app.PendingIntent {
+        val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            ?.apply {
+                action = ACTION_OPEN_FOCUS
+                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            } ?: android.content.Intent(context, com.eyeguard.app.MainActivity::class.java).apply {
+                action = ACTION_OPEN_FOCUS
+            }
+        return android.app.PendingIntent.getActivity(
+            context,
+            20,
+            launchIntent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or
+                android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    fun buildFocusStatusNotification(content: String): NotificationCompat.Builder =
+        NotificationCompat.Builder(context, CHANNEL_ID_FOCUS_STATUS)
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle(str(com.eyeguard.app.R.string.focus_title))
+            .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .setSilent(true)
+            .setContentIntent(focusContentIntent())
+
+    fun updateFocusStatus(content: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) return
+        notificationManager.notify(
+            FOCUS_STATUS_NOTIFICATION_ID,
+            buildFocusStatusNotification(content).build()
+        )
+    }
+
+    fun sendFocusCompletion(result: com.eyeguard.app.feature.focus.FocusCompletion) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) return
+        val breakthrough = result.newRealm > result.previousRealm
+        val realm = focusRealmName(result.newRealm)
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID_REMINDER)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(str(when {
+                result.dailyGoalCompleted -> com.eyeguard.app.R.string.focus_daily_complete_title
+                breakthrough -> com.eyeguard.app.R.string.focus_breakthrough_title
+                else -> com.eyeguard.app.R.string.focus_complete_title
+            }))
+            .setContentText(if (breakthrough) {
+                com.eyeguard.app.ui.LocaleHelper.wrap(context).getString(
+                    com.eyeguard.app.R.string.focus_notification_breakthrough,
+                    result.xpEarned,
+                    realm
+                )
+            } else {
+                com.eyeguard.app.ui.LocaleHelper.wrap(context).getString(
+                    com.eyeguard.app.R.string.focus_notification_complete,
+                    result.xpEarned
+                )
+            })
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setContentIntent(focusContentIntent())
+            .setAutoCancel(true)
+            .setVibrate(longArrayOf(0, 250, 150, 250))
+        notificationManager.notify(REMINDER_ID_BASE + reminderIdCounter.incrementAndGet(), builder.build())
+        vibrateDirectly()
+    }
+
+    fun sendFocusInterrupted() {
+        sendEyeReminder(
+            title = str(com.eyeguard.app.R.string.focus_interrupted_title),
+            content = str(com.eyeguard.app.R.string.focus_interrupted_body),
+            vibrate = true
+        )
+    }
+
+    fun sendFocusPresencePaused() {
+        sendEyeReminder(
+            title = str(com.eyeguard.app.R.string.focus_presence_paused_title),
+            content = str(com.eyeguard.app.R.string.focus_presence_paused_body),
+            vibrate = true
+        )
+    }
+
+    fun sendFocusRestCompleted() {
+        sendEyeReminder(
+            title = str(com.eyeguard.app.R.string.focus_rest_complete_title),
+            content = str(com.eyeguard.app.R.string.focus_rest_complete_body),
+            vibrate = true
+        )
+    }
+
+    fun sendFocusShelved() {
+        sendEyeReminder(
+            title = str(com.eyeguard.app.R.string.focus_shelved_title),
+            content = str(com.eyeguard.app.R.string.focus_shelved_body),
+            vibrate = false
+        )
+    }
+
+    fun sendFocusUsageAccessLost() {
+        sendEyeReminder(
+            title = str(com.eyeguard.app.R.string.focus_usage_access_lost_title),
+            content = str(com.eyeguard.app.R.string.focus_usage_access_lost_body),
+            vibrate = true
+        )
+    }
+
+    private fun focusRealmName(index: Int): String = str(when (index) {
+        1 -> com.eyeguard.app.R.string.realm_foundation
+        2 -> com.eyeguard.app.R.string.realm_core
+        3 -> com.eyeguard.app.R.string.realm_soul
+        4 -> com.eyeguard.app.R.string.realm_spirit
+        5 -> com.eyeguard.app.R.string.realm_tribulation
+        6 -> com.eyeguard.app.R.string.realm_ascended
+        else -> com.eyeguard.app.R.string.realm_qi
+    })
 
     /** 直接调用系统振动器（绕过 ROM 对通知震动的拦截）。 */
     private fun vibrateDirectly() {

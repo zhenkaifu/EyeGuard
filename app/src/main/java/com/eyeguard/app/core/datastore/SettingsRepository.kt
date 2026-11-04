@@ -196,6 +196,8 @@ class SettingsRepository @Inject constructor(
         context.settingsDataStore.data.map { it[Keys.APP_LANGUAGE] ?: "zh" }
 
     suspend fun setAppLanguage(language: String) {
+        // 同步内存中的语言（前台服务发通知的 getString 也走这个语言），再持久化
+        com.eyeguard.app.ui.LocaleHelper.setLanguage(language, userInitiated = true)
         context.settingsDataStore.edit { it[Keys.APP_LANGUAGE] = language }
     }
 

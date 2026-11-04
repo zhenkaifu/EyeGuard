@@ -1,9 +1,12 @@
 package com.eyeguard.app.feature.distance
 
 import android.content.Context
+import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -20,6 +23,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -36,6 +41,7 @@ import kotlinx.coroutines.withContext
 class DistanceSampler @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    private val sampleMutex = Mutex()
 
     sealed class SampleResult {
         /** 采样成功；[distanceCm] 为可信估算值，null 表示未检测到人脸或超出可信范围。 */
@@ -53,7 +59,8 @@ class DistanceSampler @Inject constructor(
      * @param lifecycleOwner 宿主生命周期（服务自身实现 [LifecycleOwner]）
      */
     suspend fun sampleOnce(lifecycleOwner: LifecycleOwner): SampleResult =
-        withContext(Dispatchers.Main) {
+        sampleMutex.withLock {
+            withContext(Dispatchers.Main) {
             val provider = runCatching { awaitProvider() }.getOrElse {
                 return@withContext SampleResult.Unavailable
             }
@@ -73,6 +80,14 @@ class DistanceSampler @Inject constructor(
             )
 
             val analysis = ImageAnalysis.Builder()
+                .setResolutionSelector(
+                    ResolutionSelector.Builder().setResolutionStrategy(
+                        ResolutionStrategy(
+                            Size(640, 480),
+                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER
+                        )
+                    ).build()
+                )
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
 
@@ -108,8 +123,9 @@ class DistanceSampler @Inject constructor(
 
             // 立即释放相机资源
             runCatching { provider.unbindAll() }
-            cleanup(analysisExecutor, detector)
-            sampleResult
+                cleanup(analysisExecutor, detector)
+                sampleResult
+            }
         }
 
     private suspend fun awaitProvider(): ProcessCameraProvider = suspendCoroutine { cont ->

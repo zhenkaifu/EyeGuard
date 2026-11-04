@@ -64,8 +64,12 @@ fun PaywallScreen(
     var selected by remember { mutableIntStateOf(1) } // 默认选年付
     var purchasing by remember { mutableIntStateOf(0) }
 
+    // 进入页面时已是 Pro 不自动返回（否则"升级到 Pro"入口表现为"点不进去"——
+    // 页面刚打开就被 LaunchedEffect 弹回）；只有本次会话内完成购买才回调退出
+    val initialPro = remember { billingRepository.isPro.value }
+
     LaunchedEffect(Unit) { billingRepository.loadOfferings() }
-    LaunchedEffect(isPro) { if (isPro) onPurchased() }
+    LaunchedEffect(isPro) { if (isPro && !initialPro) onPurchased() }
 
     Scaffold(
         topBar = {
@@ -92,6 +96,23 @@ fun PaywallScreen(
                 style = MaterialTheme.typography.bodyLarge
             )
             ProFeatureList()
+
+            if (isPro) {
+                // 已是 Pro：展示解锁状态，不再显示购买按钮
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        stringResource(R.string.paywall_already_pro),
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+            }
 
             val monthly = packages?.monthly
             val yearly = packages?.yearly

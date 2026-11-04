@@ -86,6 +86,7 @@ fun WeeklyReportScreen(
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.report_overview), style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(R.string.report_total, formatDuration(data.totalScreenTimeMs)))
+                    Text(stringResource(R.string.report_focus_minutes, data.focusMinutes))
                     Text(stringResource(R.string.report_avg, formatDuration(data.avgDailyMs)))
                     Text(stringResource(R.string.report_vs_last_week, formatTrend(data.trendPercentVsLastWeek)))
                     Text(stringResource(R.string.report_longest_session, formatDuration(data.longestSessionMs)))

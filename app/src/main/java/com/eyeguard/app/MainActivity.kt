@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.mutableIntStateOf
 import com.eyeguard.app.core.datastore.SettingsRepository
 import com.eyeguard.app.core.notification.Notifier
 import com.eyeguard.app.core.service.EyeGuardService
@@ -26,6 +27,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
+    private val focusRequest = mutableIntStateOf(0)
+
     /** 在 super.attachBaseContext 前读取语言设置并包装 Context。 */
     override fun attachBaseContext(newBase: Context) {
         // attachBaseContext 早于注入完成，无法用 @Inject 的实例；
@@ -40,26 +43,24 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        handleStartGuardIntent(intent)
+        handleNotificationIntent(intent)
         setContent {
             EyeGuardTheme {
-                EyeGuardNavHost()
+                EyeGuardNavHost(focusRequest = focusRequest.intValue)
             }
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleStartGuardIntent(intent)
+        setIntent(intent)
+        handleNotificationIntent(intent)
     }
 
-    /**
-     * 开机兜底通知（ACTION_START_GUARD）点击后自动重启守护服务：
-     * 前台 Activity 内启动前台服务不受 Android 12+ 后台启动限制。
-     */
-    private fun handleStartGuardIntent(intent: Intent?) {
-        if (intent?.action == Notifier.ACTION_START_GUARD) {
-            EyeGuardService.start(this)
+    private fun handleNotificationIntent(intent: Intent?) {
+        when (intent?.action) {
+            Notifier.ACTION_START_GUARD -> EyeGuardService.start(this)
+            Notifier.ACTION_OPEN_FOCUS -> focusRequest.intValue++
         }
     }
 }

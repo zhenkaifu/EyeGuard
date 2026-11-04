@@ -22,6 +22,15 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- 开机广播：重启后提醒用户一键恢复守护（不直接起前台服务，Android 12+ 限制） -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- 严格模式仅用于识别前台应用切换，需用户在系统设置中授权。 -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
 
     <application
         android:name=".EyeGuardApp"
@@ -68,6 +77,16 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="eye_health_monitoring" />
+        </service>
+
+        <!-- 专注修炼计时：锁屏期间到期结算，严格模式下检测应用切换。 -->
+        <service
+            android:name=".feature.focus.FocusService"
+            android:exported="false"
+            android:foregroundServiceType="camera|specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="focus_session_timer" />
         </service>
 
         <!-- 开机兜底：重启后提醒一键恢复守护 -->

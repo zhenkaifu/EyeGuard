@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.eyeguard.app.core.billing.BillingRepository
 import com.eyeguard.app.core.database.DailyUsageEntity
 import com.eyeguard.app.core.database.DailyUsageRepository
+import com.eyeguard.app.feature.focus.data.FocusSessionDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import javax.inject.Inject
@@ -20,21 +21,30 @@ import kotlinx.coroutines.flow.stateIn
 @HiltViewModel
 class WeeklyReportViewModel @Inject constructor(
     dailyUsageRepository: DailyUsageRepository,
-    billingRepository: BillingRepository
+    billingRepository: BillingRepository,
+    focusSessionDao: FocusSessionDao
 ) : ViewModel() {
 
     /** 是否 Pro（周报为 Pro 功能，入口已拦截，这里双保险）。 */
     val isPro: StateFlow<Boolean> = billingRepository.isPro
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    private val weekStartMs = LocalDate.now().minusDays(6)
+        .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+
     val report: StateFlow<WeeklyReport?> = combine(
         dailyUsageRepository.recentStats(days = 14),
-        dailyUsageRepository.totalRestCompleted
-    ) { stats, totalRest ->
-        buildReport(stats, totalRest)
+        dailyUsageRepository.totalRestCompleted,
+        focusSessionDao.completedMinutesSince(weekStartMs)
+    ) { stats, totalRest, focusMinutes ->
+        buildReport(stats, totalRest, focusMinutes)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    private fun buildReport(stats: List<DailyUsageEntity>, totalRest: Long): WeeklyReport? {
+    private fun buildReport(
+        stats: List<DailyUsageEntity>,
+        totalRest: Long,
+        focusMinutes: Int
+    ): WeeklyReport? {
         if (stats.isEmpty()) return null
         val today = LocalDate.now()
         val weekStart = today.minusDays(6)
@@ -75,6 +85,7 @@ class WeeklyReportViewModel @Inject constructor(
         return WeeklyReport(
             thisWeek = thisWeek.sortedBy { it.date },
             totalScreenTimeMs = totalMs,
+            focusMinutes = focusMinutes,
             avgDailyMs = totalMs / thisWeek.size,
             trendPercentVsLastWeek = trendPercent,
             bestDayDate = bestDay?.date,
@@ -91,6 +102,7 @@ class WeeklyReportViewModel @Inject constructor(
 data class WeeklyReport(
     val thisWeek: List<DailyUsageEntity>,
     val totalScreenTimeMs: Long,
+    val focusMinutes: Int,
     val avgDailyMs: Long,
     /** 相对上周变化百分比；上周无数据时为 null。 */
     val trendPercentVsLastWeek: Int?,

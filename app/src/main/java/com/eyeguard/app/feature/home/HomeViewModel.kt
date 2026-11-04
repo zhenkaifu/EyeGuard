@@ -1,5 +1,6 @@
 package com.eyeguard.app.feature.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eyeguard.app.core.billing.BillingRepository
@@ -7,62 +8,117 @@ import com.eyeguard.app.core.database.DailyUsageEntity
 import com.eyeguard.app.core.database.DailyUsageRepository
 import com.eyeguard.app.core.datastore.SettingsRepository
 import com.eyeguard.app.core.service.EyeGuardService
+import com.eyeguard.app.feature.focus.FocusPhase
+import com.eyeguard.app.feature.focus.FocusProgression
+import com.eyeguard.app.feature.focus.FocusRepository
+import com.eyeguard.app.feature.focus.FocusService
+import com.eyeguard.app.feature.focus.FocusTiming
 import com.eyeguard.app.feature.report.StatsLogic
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * 首页数据 ViewModel：订阅今日与最近 7 天用眼统计、守护开关意图与运行状态。
- */
+data class HomeFocusState(
+    val phase: String = FocusPhase.IDLE,
+    val hasPlan: Boolean = false,
+    val remainingMs: Long = 0L,
+    val restRemainingMs: Long = 0L,
+    val realmIndex: Int = 0,
+    val layer: Int = 1,
+    val xp: Int = 0,
+    val clarityPoints: Int = 0,
+    val strictMode: Boolean = false,
+    val reduceMotion: Boolean = false,
+    val todayProgressMs: Long = 0L,
+    val targetMinutes: Int = 0
+) {
+    val isActive: Boolean get() = phase == FocusPhase.ACTIVE
+}
+
+/** 首页数据 ViewModel：护眼统计与实时修炼状态。 */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     dailyUsageRepository: DailyUsageRepository,
     billingRepository: BillingRepository,
+    focusRepository: FocusRepository,
+    @ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
-
-    /** 是否 Pro（7 天历史图表与周报为 Pro 功能）。 */
     val isPro: StateFlow<Boolean> = billingRepository.isPro
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-    /** 守护开关的用户意图（持久化）：开机自启与"服务被杀"检测都以它为准。 */
     val guardEnabled: StateFlow<Boolean> = settingsRepository.guardEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-    /** 守护服务运行状态（每 2 秒轮询一次，页面可见期间有效）。 */
     val guardRunning: StateFlow<Boolean> = flow {
         while (true) {
             emit(EyeGuardService.isRunning)
-            kotlinx.coroutines.delay(2000)
+            delay(2000)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), EyeGuardService.isRunning)
 
-    /** 用户开了守护但服务没在运行 → 显示"服务被系统停止"修复引导卡片。 */
     val showRepairCard: StateFlow<Boolean> = combine(guardEnabled, guardRunning) { enabled, running ->
         enabled && !running
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
-    /** 今日统计（无记录时为空记录）。 */
     val todayStats: StateFlow<DailyUsageEntity?> = dailyUsageRepository.todayStats
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    /** 最近 7 天统计（DAO 返回按日期倒序）。 */
     val recentStats: StateFlow<List<DailyUsageEntity>> =
         dailyUsageRepository.recentStats(days = 7)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** 连续达标天数（与周报同口径）。 */
     val streakDays: StateFlow<Int> = combine(recentStats) { arr ->
         StatsLogic.computeStreak(arr.first())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    /** 记录守护开关意图（由 UI 在启动 / 停止服务时同步调用）。 */
+    private val ticker = flow {
+        while (true) {
+            emit(Unit)
+            delay(1_000L)
+        }
+    }
+
+    val focusState: StateFlow<HomeFocusState> = combine(focusRepository.focusState, ticker) { snapshot, _ ->
+        val level = FocusProgression.levelFor(snapshot.xp)
+        val activeElapsed = if (snapshot.activeDurationMinutes > 0) {
+            snapshot.activeDurationMinutes * 60_000L - FocusTiming.resolve(snapshot).remainingMs
+        } else 0L
+        HomeFocusState(
+            phase = snapshot.phase,
+            hasPlan = snapshot.hasActivePlan,
+            remainingMs = FocusTiming.resolve(snapshot).remainingMs,
+            restRemainingMs = FocusTiming.restRemainingMs(snapshot),
+            realmIndex = level.realmIndex,
+            layer = level.layer,
+            xp = snapshot.xp,
+            clarityPoints = snapshot.clarityPoints,
+            strictMode = snapshot.activeStrictMode,
+            reduceMotion = snapshot.reduceMotion,
+            todayProgressMs = snapshot.planCompletedMs + activeElapsed.coerceAtLeast(0L),
+            targetMinutes = snapshot.planTargetMinutes
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeFocusState())
+
+    init {
+        viewModelScope.launch {
+            focusRepository.migrateIfNeeded()
+            focusRepository.archiveExpiredPlan()
+            val snapshot = focusRepository.focusState.first()
+            if (snapshot.phase in listOf(FocusPhase.ACTIVE, FocusPhase.RESTING, FocusPhase.PRESENCE_PAUSED)) {
+                FocusService.start(context)
+            }
+        }
+    }
+
     fun setGuardEnabled(enabled: Boolean) {
         viewModelScope.launch { settingsRepository.setGuardEnabled(enabled) }
     }

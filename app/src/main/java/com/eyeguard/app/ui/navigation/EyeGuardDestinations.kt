@@ -11,4 +11,5 @@ object EyeGuardDestinations {
     const val DND = "dnd"
     const val DEBUG = "debug"
     const val WEEKLY_REPORT = "weekly_report"
+    const val FOCUS = "focus_cultivation"
 }

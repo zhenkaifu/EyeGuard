@@ -11,22 +11,18 @@ import javax.inject.Singleton
 
 /**
  * 环境光监测器：以 SensorManager 常开监听 TYPE_LIGHT（低功耗，微瓦级），
- * 事件驱动判断，不做轮询。
+ * 只负责维护最新 lux 读数，不自行触发提醒。
  *
- * 判定：当前 lux 低于 [thresholdLux] 且屏幕亮屏时，回调 [onTooDark]。
- * 由服务层做 10 分钟不重复提醒的节流（见 [lastAlertAtMs]）。
+ * 提醒判定由服务主循环按采样周期执行（与距离检测同节奏）：
+ * 每轮检查一次"当前 lux 低于阈值且亮屏"，过暗即提醒——
+ * 避免事件驱动 + 10 分钟节流导致的"提醒一次后长时间没动静"。
  *
- * 无光线传感器的设备（部分低端机 / 模拟器）onStart 返回 false，服务降级跳过。
+ * 无光线传感器的设备（部分低端机 / 模拟器）start 返回 false，服务降级跳过。
  */
 @Singleton
 class LightMonitor @Inject constructor(
     @ApplicationContext context: Context
 ) {
-
-    companion object {
-        /** 同一"环境光线太暗"提醒的最小间隔（10 分钟）。 */
-        const val ALERT_THROTTLE_MS = 10 * 60 * 1000L
-    }
 
     @Volatile
     var thresholdLux: Int = 50
@@ -34,36 +30,17 @@ class LightMonitor @Inject constructor(
     @Volatile
     var enabled: Boolean = true
 
-    /** 上次触发提醒的时间戳，服务据此节流。 */
-    @Volatile
-    var lastAlertAtMs: Long = 0L
-
     /** 最近一次光照读数（lux），尚未读到时为负。 */
     @Volatile
     var currentLux: Float = -1f
         private set
-
-    /** 由服务注入：当前是否亮屏（由 UsageMonitor 维护）。 */
-    @Volatile
-    var isScreenOnProvider: (() -> Boolean)? = null
-
-    /** 触发"环境光线太暗"判定回调。 */
-    var onTooDark: (() -> Unit)? = null
 
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val lightSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
 
     private val listener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
-            val lux = event.values[0]
-            currentLux = lux
-            if (!enabled) return
-            val now = System.currentTimeMillis()
-            val throttled = now - lastAlertAtMs < ALERT_THROTTLE_MS
-            if (lux < thresholdLux && isScreenOnProvider?.invoke() != false && !throttled) {
-                lastAlertAtMs = now
-                onTooDark?.invoke()
-            }
+            currentLux = event.values[0]
         }
 
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
@@ -79,6 +56,9 @@ class LightMonitor @Inject constructor(
         sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
         return true
     }
+
+    /** 当前是否"过暗"：有读数、低于阈值。亮屏与否由服务侧判断。 */
+    fun isTooDark(): Boolean = currentLux >= 0f && currentLux < thresholdLux
 
     fun stop() {
         sensorManager.unregisterListener(listener)

@@ -19,6 +19,7 @@ import com.eyeguard.app.core.database.DailyUsageRepository
 import com.eyeguard.app.core.notification.Notifier
 import com.eyeguard.app.feature.distance.DistanceSampler
 import com.eyeguard.app.feature.filter.EyeFilterController
+import com.eyeguard.app.feature.focus.FocusRepository
 import com.eyeguard.app.feature.light.LightMonitor
 import com.eyeguard.app.feature.usage.UsageMonitor
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,6 +59,7 @@ class EyeGuardService : Service(), LifecycleOwner {
     @Inject lateinit var dailyUsageRepository: DailyUsageRepository
     @Inject lateinit var eyeFilterController: EyeFilterController
     @Inject lateinit var billingRepository: BillingRepository
+    @Inject lateinit var focusRepository: FocusRepository
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -78,20 +80,20 @@ class EyeGuardService : Service(), LifecycleOwner {
             when (intent.action) {
                 Notifier.ACTION_PAUSE_MONITORING -> {
                     pausedUntilMs = System.currentTimeMillis() + Notifier.PAUSE_DURATION_MS
-                    updateStatus(getString(com.eyeguard.app.R.string.status_paused_1h))
+                    updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_paused_1h))
                 }
                 Notifier.ACTION_PAUSE_MONITORING_15M -> {
                     pausedUntilMs = System.currentTimeMillis() + Notifier.PAUSE_15M_DURATION_MS
-                    updateStatus(getString(com.eyeguard.app.R.string.status_paused_15m))
+                    updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_paused_15m))
                 }
                 Notifier.ACTION_RESUME_MONITORING -> {
                     pausedUntilMs = 0L
-                    updateStatus(getString(com.eyeguard.app.R.string.status_resumed))
+                    updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_resumed))
                 }
                 Notifier.ACTION_SNOOZE_FILTER -> {
                     filterSnoozedUntilMs = System.currentTimeMillis() + Notifier.FILTER_SNOOZE_MS
                     eyeFilterController.hide()
-                    updateStatus(getString(com.eyeguard.app.R.string.filter_snoozed))
+                    updateStatus(getLocalizedString(com.eyeguard.app.R.string.filter_snoozed))
                 }
             }
         }
@@ -102,6 +104,12 @@ class EyeGuardService : Service(), LifecycleOwner {
     override fun onCreate() {
         super.onCreate()
         isRunning = true
+        // 服务进程独立于界面：先从存储读一次应用语言，保证通知文案与 App 内切换一致
+        serviceScope.launch {
+            settingsRepository.appLanguage.first().let {
+                com.eyeguard.app.ui.LocaleHelper.setLanguage(it)
+            }
+        }
         registerReceiver(
             controlReceiver,
             IntentFilter().apply {
@@ -113,39 +121,35 @@ class EyeGuardService : Service(), LifecycleOwner {
             Context.RECEIVER_NOT_EXPORTED
         )
 
-        // 环境光：常开低功耗传感器监听；屏幕状态由 UsageMonitor 提供
-        lightMonitor.isScreenOnProvider = { usageMonitor.screenOn }
-        lightMonitor.onTooDark = {
-            // 免打扰时段内所有提醒静音（DND 检查为挂起操作，切协程）
-            if (!isPaused()) {
-                serviceScope.launch {
-                    if (inDndWindow()) return@launch
-                    notifier.sendEyeReminder(
-                        title = getString(com.eyeguard.app.R.string.notif_dark_title),
-                        content = getString(com.eyeguard.app.R.string.notif_dark_content),
-                        vibrate = true,
-                    )
-                    dailyUsageRepository.incrementDarkRemindersToday()
-                    updateStatus(getString(com.eyeguard.app.R.string.status_reminded_light))
-                }
-            }
-        }
+        // 环境光：常开低功耗传感器监听，只维护 lux 读数；
+        // 过暗提醒由主循环按采样周期判定（见 monitoringLoop 内的 maybeNotifyTooDark）
         lightMonitor.start()
 
-        // 用眼时长：亮灭屏广播 + 20-20-20 法则
+        // 用眼时长：亮灭屏广播 + 20-20-20 法则；远眺完成奖励清心值。
         usageMonitor.onUsageReminder = {
             if (!isPaused()) {
                 serviceScope.launch {
                     if (inDndWindow()) return@launch
+                    val focusActive = focusRepository.focusState.first().activeEndAt > 0L
                     notifier.sendEyeReminder(
-                        title = getString(com.eyeguard.app.R.string.notif_usage_title, usageMonitor.thresholdMinutes),
-                        content = getString(com.eyeguard.app.R.string.notif_usage_content),
+                        title = getLocalizedString(
+                            if (focusActive) com.eyeguard.app.R.string.focus_rest_notification_title
+                            else com.eyeguard.app.R.string.notif_usage_title,
+                            usageMonitor.thresholdMinutes
+                        ),
+                        content = getLocalizedString(
+                            if (focusActive) com.eyeguard.app.R.string.focus_rest_notification_content
+                            else com.eyeguard.app.R.string.notif_usage_content
+                        ),
                         vibrate = true,
                     )
                     dailyUsageRepository.incrementUsageRemindersToday()
-                    updateStatus(getString(com.eyeguard.app.R.string.status_rest_20s))
+                    updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_rest_20s))
                 }
             }
+        }
+        usageMonitor.onRestCompleted = {
+            serviceScope.launch { focusRepository.registerRestCompleted() }
         }
         usageMonitor.start()
     }
@@ -190,7 +194,7 @@ class EyeGuardService : Service(), LifecycleOwner {
      * 以前台服务形式启动（API 34 需显式指定 foregroundServiceType=camera）。
      */
     private fun startAsForeground() {
-        val notification = notifier.buildStatusNotification(getString(com.eyeguard.app.R.string.status_init)).build()
+        val notification = notifier.buildStatusNotification(getLocalizedString(com.eyeguard.app.R.string.status_init)).build()
         val foregroundType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
         } else {
@@ -205,6 +209,32 @@ class EyeGuardService : Service(), LifecycleOwner {
     }
 
     private fun isPaused(): Boolean = System.currentTimeMillis() < pausedUntilMs
+
+    /**
+     * 每个采样周期执行一次的暗光判定：
+     * 开关开启 + 亮屏 + lux 低于阈值 → 立即提醒（与距离检测同节奏）。
+     * 暂停期与免打扰时段内静默。
+     */
+    private suspend fun maybeNotifyTooDark() {
+        if (!lightMonitor.enabled || isPaused()) return
+        if (!usageMonitor.screenOn) return
+        if (!lightMonitor.isTooDark()) return
+        if (inDndWindow()) return
+        val focusActive = focusRepository.focusState.first().activeEndAt > 0L
+        notifier.sendEyeReminder(
+            title = getLocalizedString(
+                if (focusActive) com.eyeguard.app.R.string.focus_risk_dark_title
+                else com.eyeguard.app.R.string.notif_dark_title
+            ),
+            content = getLocalizedString(
+                if (focusActive) com.eyeguard.app.R.string.focus_risk_dark_content
+                else com.eyeguard.app.R.string.notif_dark_content
+            ),
+            vibrate = true,
+        )
+        dailyUsageRepository.incrementDarkRemindersToday()
+        updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_reminded_light))
+    }
 
     /**
      * 是否处于免打扰时段（Pro 功能；免费用户存储中即使有值也忽略）。
@@ -246,12 +276,15 @@ class EyeGuardService : Service(), LifecycleOwner {
                 if (pro) settingsRepository.usageThresholdMinutes.first() else DEFAULT_USAGE_MINUTES
             usageMonitor.tick()
 
+            // 光线提醒：与距离检测同节奏，每个采样周期检查一次当前 lux
+            maybeNotifyTooDark()
+
             applyEyeFilter()
 
             when {
-                !enabled -> updateStatus(getString(com.eyeguard.app.R.string.status_distance_off))
-                isPaused() -> updateStatus(getString(com.eyeguard.app.R.string.status_paused_generic))
-                !hasCameraPermission() -> updateStatus(getString(com.eyeguard.app.R.string.status_no_camera_perm))
+                !enabled -> updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_distance_off))
+                isPaused() -> updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_paused_generic))
+                !hasCameraPermission() -> updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_no_camera_perm))
                 else -> runSampling(thresholdCm, intervalSec)
             }
             delay(intervalSec.coerceAtLeast(10L) * 1000L)
@@ -321,19 +354,19 @@ class EyeGuardService : Service(), LifecycleOwner {
      * 本采样间隔累加进"当日距离过近时长"；高于阈值或采样不可用 → 命中清零。
      */
     private suspend fun runSampling(thresholdCm: Int, intervalSec: Long) {
-        updateStatus(getString(com.eyeguard.app.R.string.status_detecting))
+        updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_detecting))
         val result = distanceSampler.sampleOnce(this)
         when (result) {
             is DistanceSampler.SampleResult.Unavailable -> {
                 consecutiveTooCloseHits = 0
-                updateStatus(getString(com.eyeguard.app.R.string.status_camera_busy))
+                updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_camera_busy))
             }
             is DistanceSampler.SampleResult.Success -> {
                 val distanceCm = result.distanceCm
                 if (distanceCm == null) {
                     // 未检测到人脸（脸不在画面内或超出可信范围），视为正常
                     consecutiveTooCloseHits = 0
-                    updateStatus(getString(com.eyeguard.app.R.string.status_distance_normal))
+                    updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_distance_normal))
                     return
                 }
                 if (distanceCm < thresholdCm) {
@@ -343,20 +376,29 @@ class EyeGuardService : Service(), LifecycleOwner {
                         dailyUsageRepository.addTooCloseDurationToday(intervalSec * 1000L)
                     }
                     if (consecutiveTooCloseHits >= REQUIRED_HITS && !inDndWindow()) {
+                        val focusActive = focusRepository.focusState.first().activeEndAt > 0L
                         notifier.sendEyeReminder(
-                            title = getString(com.eyeguard.app.R.string.notif_too_close_title),
-                            content = getString(com.eyeguard.app.R.string.notif_too_close_content, distanceCm, thresholdCm),
+                            title = getLocalizedString(
+                                if (focusActive) com.eyeguard.app.R.string.focus_risk_distance_title
+                                else com.eyeguard.app.R.string.notif_too_close_title
+                            ),
+                            content = getLocalizedString(
+                                if (focusActive) com.eyeguard.app.R.string.focus_risk_distance_content
+                                else com.eyeguard.app.R.string.notif_too_close_content,
+                                distanceCm,
+                                thresholdCm
+                            ),
                             vibrate = true,
                         )
                         serviceScope.launch { dailyUsageRepository.incrementDistanceRemindersToday() }
                         consecutiveTooCloseHits = 0
-                        updateStatus(getString(com.eyeguard.app.R.string.status_reminded_rest))
+                        updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_reminded_rest))
                     } else {
-                        updateStatus(getString(com.eyeguard.app.R.string.status_distance_close))
+                        updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_distance_close))
                     }
                 } else {
                     consecutiveTooCloseHits = 0
-                    updateStatus(getString(com.eyeguard.app.R.string.status_distance_value, distanceCm))
+                    updateStatus(getLocalizedString(com.eyeguard.app.R.string.status_distance_value, distanceCm))
                 }
             }
         }
@@ -366,6 +408,10 @@ class EyeGuardService : Service(), LifecycleOwner {
         // 暂停状态决定常驻通知显示"立即恢复"还是"暂停 15 分钟 / 1 小时"按钮
         notifier.updateStatusNotification(statusText, isPaused())
     }
+
+    /** 按 App 内选择的语言取文案（服务不走 Activity 的 attachBaseContext）。 */
+    private fun getLocalizedString(resId: Int, vararg args: Any): String =
+        com.eyeguard.app.ui.LocaleHelper.wrap(this).getString(resId, *args)
 
     companion object {
         /** 服务是否运行中（首页开关状态显示用）。 */

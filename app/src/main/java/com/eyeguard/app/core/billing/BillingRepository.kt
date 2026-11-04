@@ -129,7 +129,7 @@ class BillingRepository @Inject constructor(
     /** 拉取 offerings 并提取月付 / 年付套餐（失败静默，UI 显示加载态）。 */
     fun loadOfferings(onError: (String) -> Unit = {}) {
         if (!initialized) {
-            onError(context.getString(R.string.billing_not_configured))
+            onError(com.eyeguard.app.ui.LocaleHelper.wrap(context).getString(R.string.billing_not_configured))
             return
         }
         Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
@@ -160,7 +160,7 @@ class BillingRepository @Inject constructor(
         onResult: (isPro: Boolean, error: String?) -> Unit
     ) {
         if (!initialized) {
-            onResult(false, context.getString(R.string.billing_not_configured))
+            onResult(false, com.eyeguard.app.ui.LocaleHelper.wrap(context).getString(R.string.billing_not_configured))
             return
         }
         Purchases.sharedInstance.purchase(
@@ -197,7 +197,7 @@ class BillingRepository @Inject constructor(
             return
         }
         if (!initialized) {
-            onResult(false, context.getString(R.string.billing_not_configured))
+            onResult(false, com.eyeguard.app.ui.LocaleHelper.wrap(context).getString(R.string.billing_not_configured))
             return
         }
         Purchases.sharedInstance.restorePurchases(object : ReceiveCustomerInfoCallback {

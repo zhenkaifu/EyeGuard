@@ -54,6 +54,9 @@ class UsageMonitor @Inject constructor(
     /** 触发"请看 6 米外 20 秒"提醒回调。 */
     var onUsageReminder: (() -> Unit)? = null
 
+    /** 20 秒远眺真正完成后回调，用于修炼清心值奖励。 */
+    var onRestCompleted: (() -> Unit)? = null
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private var screenOnAtMs: Long = 0L
@@ -136,6 +139,7 @@ class UsageMonitor @Inject constructor(
         // 熄屏即视为休息开始：若提醒后的休息窗口内熄屏，直接完成休息重置计时
         if (awaitingRestSinceMs > 0) {
             scope.launch { dailyUsageRepository.incrementRestCompletedToday() }
+            onRestCompleted?.invoke()
             awaitingRestSinceMs = 0L
             accumulatedMs = 0L
         } else if (accumulatedMs >= thresholdMinutes * 60_000L) {
@@ -159,6 +163,7 @@ class UsageMonitor @Inject constructor(
         // 提醒后满 20 秒休息窗口：计一次"完成休息"，并参选"最长连续用眼"
         reportSessionEnd()
         scope.launch { dailyUsageRepository.incrementRestCompletedToday() }
+        onRestCompleted?.invoke()
         awaitingRestSinceMs = 0L
         accumulatedMs = 0L
     }
