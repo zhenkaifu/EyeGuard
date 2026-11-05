@@ -73,7 +73,15 @@ fun FocusMusicCreditsDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = CultivationPalette.Panel,
-        title = { Text(stringResource(R.string.focus_music_dialog_title), fontWeight = FontWeight.Bold) },
+        titleContentColor = CultivationPalette.Ink,
+        textContentColor = CultivationPalette.Ink,
+        title = {
+            Text(
+                stringResource(R.string.focus_music_dialog_title),
+                color = CultivationPalette.Ink,
+                fontWeight = FontWeight.Bold
+            )
+        },
         text = {
             Column(
                 Modifier.verticalScroll(rememberScrollState()),
@@ -87,19 +95,25 @@ fun FocusMusicCreditsDialog(onDismiss: () -> Unit) {
                 Text(
                     stringResource(R.string.focus_music_plan_credit),
                     style = MaterialTheme.typography.bodyMedium,
+                    color = CultivationPalette.Ink,
                     fontWeight = FontWeight.SemiBold
                 )
                 TextButton(onClick = {
-                    open("https://commons.wikimedia.org/wiki/File:Jiu_Kuang.ogg")
-                }) { Text(stringResource(R.string.focus_music_plan_source)) }
+                    open("https://soundimage.org/fantasywonder/")
+                }) {
+                    Text(stringResource(R.string.focus_music_plan_source), color = CultivationPalette.Jade)
+                }
                 Text(
                     stringResource(R.string.focus_music_focus_credit),
                     style = MaterialTheme.typography.bodyMedium,
+                    color = CultivationPalette.Ink,
                     fontWeight = FontWeight.SemiBold
                 )
                 TextButton(onClick = {
                     open("https://commons.wikimedia.org/wiki/File:Guqin-Yangguan_Sandie.ogg")
-                }) { Text(stringResource(R.string.focus_music_focus_source)) }
+                }) {
+                    Text(stringResource(R.string.focus_music_focus_source), color = CultivationPalette.Jade)
+                }
                 Text(
                     stringResource(R.string.focus_music_license),
                     style = MaterialTheme.typography.bodySmall,
@@ -108,11 +122,19 @@ fun FocusMusicCreditsDialog(onDismiss: () -> Unit) {
                 )
                 TextButton(onClick = {
                     open("https://creativecommons.org/licenses/by-sa/3.0/")
-                }) { Text(stringResource(R.string.focus_music_license_link)) }
+                }) {
+                    Text(stringResource(R.string.focus_music_license_link), color = CultivationPalette.Jade)
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.focus_music_close)) }
+            TextButton(onClick = onDismiss) {
+                Text(
+                    stringResource(R.string.focus_music_close),
+                    color = CultivationPalette.Ink,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
     )
 }

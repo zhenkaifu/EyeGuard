@@ -95,6 +95,7 @@ fun FocusScreen(onBack: () -> Unit, viewModel: FocusViewModel = hiltViewModel())
     var showAbandon by rememberSaveable { mutableStateOf(false) }
     var showEndPlan by rememberSaveable { mutableStateOf(false) }
     var showTasks by rememberSaveable { mutableStateOf(false) }
+    var showPlanWizard by rememberSaveable { mutableStateOf(false) }
     var showMusicCredits by rememberSaveable { mutableStateOf(false) }
     var planningStart by rememberSaveable { mutableStateOf(false) }
     @Suppress("UNUSED_EXPRESSION") permissionRefresh
@@ -252,77 +253,14 @@ fun FocusScreen(onBack: () -> Unit, viewModel: FocusViewModel = hiltViewModel())
                                     color = CultivationPalette.InkSoft, style = MaterialTheme.typography.bodyMedium)
                             }
                             FocusMusicCreditsButton(onClick = { showMusicCredits = true })
-                            OutlinedTextField(
-                                value = goal,
-                                onValueChange = { goal = it.take(40) },
-                                label = { Text(stringResource(R.string.focus_goal_optional)) },
-                                singleLine = true,
-                                shape = RoundedCornerShape(16.dp),
+                            CultivationPrimaryButton(
+                                onClick = { showPlanWizard = true },
                                 modifier = Modifier.fillMaxWidth()
-                            )
-                            PlanSlider(
-                                title = stringResource(R.string.focus_plan_target, targetMinutes),
-                                value = targetMinutes,
-                                range = 25f..480f,
-                                onChange = { targetMinutes = (it / 5).roundToInt() * 5 }
-                            )
-                            PlanSlider(
-                                title = stringResource(R.string.focus_plan_segment, segmentMinutes),
-                                value = segmentMinutes,
-                                range = 25f..120f,
-                                onChange = { segmentMinutes = (it / 5).roundToInt() * 5 }
-                            )
-                            PlanSlider(
-                                title = stringResource(R.string.focus_plan_rest, restMinutes),
-                                value = restMinutes,
-                                range = 1f..30f,
-                                onChange = { restMinutes = it.roundToInt().coerceAtLeast(1) }
-                            )
-                            val preview = FocusPlanLogic.segmentsFor(targetMinutes, segmentMinutes)
-                            Surface(shape = RoundedCornerShape(14.dp),
-                                color = CultivationPalette.JadeLight.copy(alpha = 0.16f)) {
-                                Text(
-                                    stringResource(R.string.focus_plan_preview, preview.size, preview.joinToString(" / ")),
-                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = CultivationPalette.Jade,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                            SettingSwitchRow(
-                                title = stringResource(R.string.focus_strict_title),
-                                description = stringResource(R.string.focus_strict_description),
-                                checked = state.strictModePreferred,
-                                onChecked = {
-                                    viewModel.setStrictModePreferred(it)
-                                    if (it) {
-                                        showApps = true
-                                        viewModel.loadAvailableApps()
-                                    }
-                                }
-                            )
-                            SettingSwitchRow(
-                                title = stringResource(R.string.focus_presence_title),
-                                description = stringResource(
-                                    if (state.strictModePreferred) R.string.focus_presence_strict_description
-                                    else R.string.focus_presence_description
-                                ),
-                                checked = presenceRequested,
-                                enabled = !state.strictModePreferred,
-                                onChecked = viewModel::setPresencePreferred
-                            )
-                            if (state.strictModePreferred) {
-                                OutlinedButton(
-                                    onClick = { showApps = true; viewModel.loadAvailableApps() },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(16.dp),
-                                    border = BorderStroke(1.dp, CultivationPalette.Gold.copy(alpha = 0.55f))
-                                ) {
-                                    Text(stringResource(R.string.focus_allowed_apps, state.allowedPackages.size))
-                                }
-                                if (!viewModel.hasUsageAccess()) {
-                                    Text(stringResource(R.string.focus_usage_permission_hint),
-                                        color = CultivationPalette.Cinnabar, style = MaterialTheme.typography.bodySmall)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Filled.PlayArrow, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(stringResource(R.string.focus_create_daily_plan), fontWeight = FontWeight.Bold)
                                 }
                             }
                             SettingSwitchRow(
@@ -331,18 +269,6 @@ fun FocusScreen(onBack: () -> Unit, viewModel: FocusViewModel = hiltViewModel())
                                 checked = state.reduceMotion,
                                 onChecked = viewModel::setReduceMotion
                             )
-                            CultivationPrimaryButton(
-                                onClick = { planningStart = true; showTasks = true },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Filled.PlayArrow, contentDescription = null)
-                                    Spacer(Modifier.width(8.dp))
-                                    Text(stringResource(R.string.focus_start_daily_plan), fontWeight = FontWeight.Bold)
-                                }
-                            }
-                            Text(stringResource(R.string.focus_privacy_note), style = MaterialTheme.typography.bodySmall,
-                                color = CultivationPalette.InkSoft)
                             if (!notificationsGranted) {
                                 Text(stringResource(R.string.focus_notification_permission_hint),
                                     style = MaterialTheme.typography.bodySmall, color = CultivationPalette.Cinnabar)
@@ -473,6 +399,32 @@ fun FocusScreen(onBack: () -> Unit, viewModel: FocusViewModel = hiltViewModel())
             }
             Spacer(Modifier.height(8.dp))
         }
+    }
+
+    if (showPlanWizard) {
+        FocusPlanWizard(
+            targetMinutes = targetMinutes,
+            segmentMinutes = segmentMinutes,
+            restMinutes = restMinutes,
+            goal = goal,
+            strictMode = state.strictModePreferred,
+            presenceEnabled = state.presencePreferred,
+            allowedAppCount = state.allowedPackages.size,
+            usageAccessGranted = viewModel.hasUsageAccess(),
+            onTargetChange = { targetMinutes = it },
+            onSegmentChange = { segmentMinutes = it },
+            onRestChange = { restMinutes = it },
+            onGoalChange = { goal = it },
+            onStrictChange = viewModel::setStrictModePreferred,
+            onPresenceChange = viewModel::setPresencePreferred,
+            onChooseApps = { showApps = true; viewModel.loadAvailableApps() },
+            onDismiss = { showPlanWizard = false },
+            onComplete = {
+                showPlanWizard = false
+                planningStart = true
+                showTasks = true
+            }
+        )
     }
 
     if (showTasks) {
@@ -674,18 +626,7 @@ private fun RestGuidanceCard(state: FocusUiState) {
 }
 
 @Composable
-private fun PlanSlider(title: String, value: Int, range: ClosedFloatingPointRange<Float>, onChange: (Float) -> Unit) {
-    Column {
-        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-        Slider(value = value.toFloat(), onValueChange = onChange, valueRange = range,
-            colors = SliderDefaults.colors(thumbColor = CultivationPalette.Jade,
-                activeTrackColor = CultivationPalette.Jade,
-                inactiveTrackColor = CultivationPalette.JadeLight.copy(alpha = 0.25f)))
-    }
-}
-
-@Composable
-private fun SettingSwitchRow(
+internal fun SettingSwitchRow(
     title: String,
     description: String,
     checked: Boolean,

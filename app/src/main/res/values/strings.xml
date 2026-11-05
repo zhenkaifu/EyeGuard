@@ -416,12 +416,36 @@
     <string name="focus_music_disable">关闭修仙配乐</string>
     <string name="focus_music_entry">仙乐相伴 · 查看曲目与版权</string>
     <string name="focus_music_dialog_title">修仙配乐</string>
-    <string name="focus_music_dialog_body">计划页播放较有节奏的古琴曲，开始修炼后自动切换为舒缓古琴。配乐会循环播放；离开计划页、暂停修炼或结束计划时停止。顶部音符按钮可随时静音，并记住你的选择。</string>
-    <string name="focus_music_plan_credit">计划页：《酒狂》\n古琴演奏：Charlie Huang</string>
+    <string name="focus_music_dialog_body">计划页播放山林幻想风的游戏循环配乐，开始修炼后自动切换为舒缓古琴《阳关三叠》。离开计划页、暂停修炼或结束计划时停止。顶部音符按钮可随时静音，并记住你的选择。</string>
+    <string name="focus_music_plan_credit">计划页：“Our Mountain_v003”\n作者：Eric Matyas · www.soundimage.org</string>
     <string name="focus_music_focus_credit">修炼与休息：《阳关三叠》\n古琴演奏：Charlie Huang（Charles R Tsua）</string>
-    <string name="focus_music_plan_source">查看《酒狂》素材来源</string>
+    <string name="focus_music_plan_source">查看计划页配乐来源</string>
     <string name="focus_music_focus_source">查看《阳关三叠》素材来源</string>
-    <string name="focus_music_license">录音以 CC BY-SA 3.0 许可使用，应用内保留原音频，未做剪辑或改编。素材作者不代表认可或推荐 EyeGuard。</string>
-    <string name="focus_music_license_link">查看许可全文</string>
+    <string name="focus_music_license">“Our Mountain_v003”按 Soundimage 署名要求使用。《阳关三叠》录音以 CC BY-SA 3.0 许可使用，应用内保留原音频。素材作者不代表认可或推荐 EyeGuard。</string>
+    <string name="focus_music_license_link">查看《阳关三叠》许可全文</string>
     <string name="focus_music_close">知道了</string>
+
+    <!-- 今日计划分步弹窗 -->
+    <string name="focus_create_daily_plan">创建今日修行</string>
+    <string name="focus_plan_wizard_title">制定今日修行</string>
+    <string name="focus_plan_step">第 %1$d / 6 步</string>
+    <string name="focus_plan_next">下一步</string>
+    <string name="focus_plan_previous">上一步</string>
+    <string name="focus_plan_target_question">今天打算修炼多久？</string>
+    <string name="focus_plan_target_hint">设置今日有效专注总时长，休息和主动暂停都不计入。</string>
+    <string name="focus_plan_segment_question">每隔多久休息一次？</string>
+    <string name="focus_plan_segment_hint">每段至少 25 分钟；最后不足 25 分钟的部分会并入上一段。</string>
+    <string name="focus_plan_rest_question">每段之后休息多久？</string>
+    <string name="focus_plan_rest_hint">休息不计入今日修炼总时长，结束后再手动开始下一段。</string>
+    <string name="focus_plan_strict_question">要开启严格修炼吗？</string>
+    <string name="focus_plan_presence_question">要开启人脸在席检测吗？</string>
+    <string name="focus_plan_goal_question">今天想完成什么？</string>
+    <string name="focus_plan_goal_hint">可留空。下一步还能添加具体任务，并为每项设置 1–5 点修为奖励。</string>
+    <string name="focus_plan_summary_title">今日修行一览</string>
+    <string name="focus_plan_summary_strict">严格修炼 · 1.5 倍修为</string>
+    <string name="focus_plan_summary_normal">普通修炼 · 每有效分钟 1 点修为</string>
+    <string name="focus_plan_summary_presence_on">人脸在席检测：已开启</string>
+    <string name="focus_plan_summary_presence_off">人脸在席检测：未开启</string>
+    <string name="focus_plan_decrease">减少时长</string>
+    <string name="focus_plan_increase">增加时长</string>
 </resources>

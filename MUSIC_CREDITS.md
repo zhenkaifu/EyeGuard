@@ -2,14 +2,15 @@
 
 EyeGuard bundles the following unmodified audio recordings. Playback does not require a network connection.
 
-## Plan screen — `cultivation_plan.ogg`
+## Plan screen — `cultivation_plan.mp3`
 
-- Work: 《酒狂》 (Jiu Kuang / Drunken Ecstasy)
-- Composer: traditional score from 《神奇秘谱》 (1425)
-- Performer and recording copyright holder: Charlie Huang (CharlieHuang on Wikimedia Commons)
-- Source: https://commons.wikimedia.org/wiki/File:Jiu_Kuang.ogg
-- License: Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0)
-- Changes: none; the original Ogg Vorbis file is bundled under a new resource filename only.
+- Work: `Our Mountain_v003` (resource file: `Our-Mountain_v003_Looping.mp3`)
+- Composer and copyright holder: Eric Matyas
+- Source page: https://soundimage.org/fantasywonder/
+- Original audio: https://soundimage.org/wp-content/uploads/2018/10/Our-Mountain_v003_Looping.mp3
+- License / attribution requirements: https://soundimage.org/attribution-info/
+- Required attribution: `“Our Mountain_v003” by Eric Matyas, www.soundimage.org`
+- Changes: none; the original MP3 is bundled under a new resource filename only.
 
 ## Focus and rest screens — `cultivation_focus.ogg`
 
